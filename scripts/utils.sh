@@ -257,30 +257,14 @@ function read_input {
       done
    fi
    nbondsbreak=$( awk 'BEGIN{nbb=0};{if($1=="nbondsbreak") nbb=$2};END{print nbb}'  $inputfile )
-   kapparep=$(awk 'BEGIN{kapparep=200};{if($1=="kapparep") kapparep=$2};END{print kapparep}'  $inputfile)
-   kappa=$(awk 'BEGIN{kappa=200};{if($1=="kappa") kappa=$2};END{print kappa}'  $inputfile)
-   iexp=$(awk 'BEGIN{iexp=1};{if($1=="iexp") iexp=$2};END{print iexp}'  $inputfile)
-   rmin=$(awk 'BEGIN{rmin=0.2};{if($1=="rmin") iexp=$2};END{print rmin}'  $inputfile)
    if [ $nbondsbreak -gt 0 ]; then
       mdc=1
-      rm -rf fort.68 
-      echo $kapparep $kappa $iexp $rmin > fort.70
-      for i in $(seq 1 $nbondsbreak)
-      do
-         bb="$(awk '{if($1=="nbondsbreak") {i=1;while(i<='$i'){getline;if(i=='$i') print $1,$2;++i}}}' $inputfile)"
-         echo "$bb" >> fort.68
-      done
+      awk '{if($1=="nbondsbreak") {nbb=$2;for(i=1;i<=nbb;i++) {getline;print $0}}}' $inputfile > fort.68
    fi
    nbondsform=$( awk 'BEGIN{nbfo=0};{if($1=="nbondsform") nbfo=$2};END{print nbfo}'  $inputfile )
    if [ $nbondsform -gt 0 ]; then
       mdc=1
-      rm -rf fort.69 
-      echo $kapparep $kappa $iexp $rmin > fort.70
-      for i in $(seq 1 $nbondsform)
-      do
-         bfo="$(awk '{if($1=="nbondsform") {i=1;while(i<='$i'){getline;if(i=='$i') print $1,$2;++i}}}' $inputfile)"
-         echo "$bfo" >> fort.69
-      done
+      awk '{if($1=="nbondsform") {nbb=$2;for(i=1;i<=nbb;i++) {getline;print $0}}}' $inputfile > fort.69
    fi 
 #HL stuff
    HLstring0="$(awk '{if($1=="HighLevel") print $2}' $inputfile)"
@@ -455,12 +439,12 @@ if [ $nbondsfrozen -gt 0 ]; then
 fi
 if [ $nbondsbreak -gt 0 ] && [ $mdc -eq 1 ]; then
    echo "MD constraint: a force is applied to $nbondsbreak bonds to promote their breakage"
-   tmp1="$(echo "$dynamics_template" | sed 's/itry=100/itry=100 debug nbondsbreak='$nbondsbreak'/')"
+   tmp1="$(echo "$dynamics_template" | sed 's/itry=100/itry=100 debug nbondsbreak_ase='$nbondsbreak'/')"
    dynamics_template="$tmp1"
 fi
 if [ $nbondsform -gt 0 ] && [ $mdc -eq 1 ]; then
    echo "MD constraint: a force is applied to $nbondsform pairs of atoms to promote bond formation"
-   tmp2="$(echo "$dynamics_template" | sed 's/itry=100/itry=100 debug nbondsform='$nbondsform'/')"
+   tmp2="$(echo "$dynamics_template" | sed 's/itry=100/itry=100 debug nbondsform_ase='$nbondsform'/')"
    dynamics_template="$tmp2"
 fi
 echo ""
