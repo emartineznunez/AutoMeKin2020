@@ -1,0 +1,22 @@
+--General--
+molecule       FA
+LowLevel       pm7 
+HighLevel      hf/sto-3g
+LowLevel_TSopt gaussian b3lyp/sto-3g
+IRCpoints      30
+charge         0
+mult           1
+
+--Method--
+sampling MD
+ntraj    3 
+
+--Screening--
+imagmin 200
+MAPEmax 0.008
+BAPEmax 2.5
+eigLmax 0.1
+
+--Kinetics--
+Energy 150
+
