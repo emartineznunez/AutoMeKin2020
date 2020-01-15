@@ -10,14 +10,10 @@ mult   1
 sampling    MD
 temp        10
 nbondsform  1
-4 5
+4 5  30
 nbondsbreak 2
-3 5
-1 4
-kapparep    200
-kappa       100
-iexp        1.0
-rmin        0.5
+3 5  80
+1 4  80
 
 --Screening--
 imagmin 200

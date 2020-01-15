@@ -10,9 +10,8 @@ mult   1
 sampling   MD
 temp       2
 nbondsbreak 2
-1 13 
-2 8
-kapparep   200 
+1 13  80
+2 8   80
 
 --Screening--
 imagmin 200

@@ -11,11 +11,8 @@ sampling  MD
 ntraj     10
 temp       2
 nbondsform 2
-1 13 
-2 8
-kappa    200 
-iexp     1.0
-rmin     0.5
+1 13 10
+2 8  10
 
 --Screening--
 imagmin 200
