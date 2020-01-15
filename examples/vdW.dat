@@ -1,0 +1,19 @@
+--General--
+molecule  Bz-N2
+fragmentA Bz
+fragmentB N2
+
+--Method--
+sampling vdW 
+rotate   com com 4.0 1.5
+Nassoc   10
+ntraj    1
+fs       500
+
+--Screening--
+MAPEmax 0.0001
+BAPEmax 0.5
+eigLmax 0.01
+
+--Kinetics--
+Energy 150

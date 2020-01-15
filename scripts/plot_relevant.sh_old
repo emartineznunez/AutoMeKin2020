@@ -1,0 +1,194 @@
+if [ -f amk.dat ];then
+   echo "amk.dat is in the current dir"
+   inputfile=amk.dat
+else
+   echo "amk input file is missing. You sure you are in the right folder?"
+   exit
+fi
+molecule=`awk '{if($1=="molecule") print $2}' $inputfile`
+tsdirll=`awk '{if($1 == "tsdirll") {print $2;nend=1}};END{if(nend==0) print "'$PWD'/tsdirLL_'$molecule'"}' $inputfile`
+method=` awk 'BEGIN{llcalc="PM7"};{if($1=="LLcalc") {$1="";llcalc=$0}};END{print llcalc}' $inputfile `
+#
+# ptgr is the percent of the total number of processes to be considered a relevant path
+#
+imin=` awk 'BEGIN{imin="min0"};{if($1=="imin") imin=$2};END{print imin}'  $inputfile `
+if [ $imin == "ask" ]; then
+   echo -n "Provide the label of the starting minimum: "
+   read imin
+fi
+if [ $imin == "min0" ]; then
+   minn=`awk '/min0/{print $2}' $tsdirll/MINs/SORTED/MINlist_sorted`
+   imin=`awk 'BEGIN{min='$minn'}
+   {for(i=1;i<=NF;i++) {m[NR,i]=$i;iso[NR]=NF}
+   j=1
+   while(j<=iso[NR]){
+      if('$minn'==m[NR,j]) min=m[NR,1]
+      j++
+      }
+   }
+   END{print min}' $tsdirll/working/conf_isomer.out `
+fi
+rate=` awk '/Rate/{if ($2=="canonical") print "0";if($2=="microcanonical") print "1" }' $inputfile `
+
+file=$tsdirll/KMC/RXNet.relevant
+#run simplifyRXN.sh just in case
+simplifyRXN.sh
+#run simplifyRXN.sh just in case
+if [ ! -f $file ]; then
+   echo "File $tsdirll/KMC/RXNet.relevant does not exist. Have you already run simplifyRXN.sh script?"
+   exit
+fi
+awk '{if($1=="TS") print $1,$2,$3,$4,$5,$7,$8,$9,$10,$11}' $file > plotdat
+eref=`awk '{if($2=='$imin') print $4}' $tsdirll/MINs/SORTED/MINlist_sorted`
+#echo $eref
+rm -f plotdat.out
+set `awk '{print NR}' plotdat`
+for i
+do
+   echo "constructing data line" $i
+   ts=`awk 'NR=='$i',NR=='$i'{print $2}' plotdat` 
+   min1=`awk 'NR=='$i',NR=='$i'{print $7}' plotdat` 
+   min2=`awk 'NR=='$i',NR=='$i'{print $10}' plotdat` 
+   pro=`awk 'BEGIN{p=0};NR=='$i',NR=='$i'{if($9=="PROD") p=1};END{print p}' plotdat` 
+   ets=`awk '{if($2=='$ts') print $4-"'$eref'"}' $tsdirll/TSs/SORTED/TSlist_sorted`
+   emin1=`awk '{if($2=='$min1') print $4-"'$eref'"}' $tsdirll/MINs/SORTED/MINlist_sorted`
+   if [ $pro -eq 1 ]; then
+      code=`awk '{if($2=='$ts') print $11}' $tsdirll/KMC/RXNet`
+      rm -f calc
+      awk '/E=/{print $2,$4}' $tsdirll/PRODs/PR$code"_"*.rxyz > calc
+      awk '/E=/{print $2,$4}' $tsdirll/MINs/SORTED/MIN$imin"_"*.rxyz >> calc
+      emin2=`awk '{e[NR]=$1;ezpe[NR]=$2};END{print e[1]+ezpe[1]-e[2]-ezpe[2]}' calc`
+      pr=`FormulaPROD.sh $tsdirll/PRODs/PR$code"_"*.rxyz`
+      printf "MIN %4s %10s TS %4s %10s PRO %25s %10s\n" $min1 $emin1 $ts $ets "$pr" $emin2 >> plotdat.out
+   else
+      emin2=`awk '{if($2=='$min2') print $4-"'$eref'"}' $tsdirll/MINs/SORTED/MINlist_sorted`
+      printf "MIN %4s %10s TS %4s %10s MIN %4s %10s\n" $min1 $emin1 $ts $ets $min2 $emin2 >> plotdat.out
+   fi
+done
+
+
+
+
+rm -f next_layer diagram_middle
+sed 's/ + /+/g' plotdat.out >plotdat0.out
+emin=`awk 'BEGIN{min= 1e20};/MIN/{if($3<min) min=$3; if($NF<min) min=$NF};END{print min*1.1}' plotdat0.out `
+emax=`awk 'BEGIN{max=-1e20};/MIN/{if($3>max) max=$3; if($NF>max) max=$NF; if($6>max) max=$6};END{print max*1.1}' plotdat0.out `
+echo $emax > ee
+echo $emin >> ee
+delta=`awk '{e[NR]=$1};END{print 0.01*(e[1]-e[2])}' ee`
+
+awk '/MIN/{if($2=='$imin') {
+    ++cnt
+    cnto2=cnt/2
+    if(cnto2==(int(cnto2))) 
+       p=1
+    else
+       p=-1
+    if($7=="MIN") {++mm;pm[mm]=p;min[mm]=$8
+    i=1
+    while(i<=mm-1) {
+      if($8==min[i]) p=pm[i]
+      i++
+      }
+    }
+    print "set arrow from  ",p*2,",0 to ",p*6",",$6,"nohead lw 1"
+    print "set arrow from  ",p*6",",$6" to ",p*10,",",$6,"nohead lw 1"
+    print "set arrow from  ",p*10,",",$6,"to ",p*14,",",$NF,"nohead lw 1"
+    if($7=="MIN") print "set arrow from  ",p*14",",$NF" to ",p*18,",",$NF,"nohead lw 1"
+    if($7=="MIN") {
+      print $8,p*18,$NF >> "next_layer"
+     }
+    if($7=="PRO") print "set arrow from  ",p*14",",$NF" to ",p*22,",",$NF,"nohead lw 1"
+    print "set label \""$2"\" at -2,"'$delta'," font \"Arial-Bold,12\" "
+    if(p==1)  print "set label \""$5"\" at",p*6","$6+'$delta'," font \"Arial-Bold,12\" textcolor rgbcolor \"red\""
+    if(p==-1) print "set label \""$5"\" at",p*10","$6+'$delta'," font \"Arial-Bold,12\" textcolor rgbcolor \"red\""
+    if(p==1  && $7=="MIN" ) print "set label \""$8"\" at",p*14","$NF+'$delta'," font \"Arial-Bold,12\" "
+    if(p==-1 && $7=="MIN" ) print "set label \""$8"\" at",p*18","$NF+'$delta'," font \"Arial-Bold,12\" "
+    if(p==1  && $7=="PRO" ) print "set label \""$8"\" at",p*14","$NF+'$delta'," font \"Arial-Bold,12\" "
+    if(p==-1 && $7=="PRO" ) print "set label \""$8"\" at",p*22","$NF+'$delta'," font \"Arial-Bold,12\" "
+    }
+
+}' plotdat0.out >> diagram_middle
+
+# loop over the minima
+for ibl in $(seq 1 10)
+do
+   if [ -f next_layer ]; then
+      echo "Iteration" $ibl
+   else
+      echo "end"
+      break
+   fi
+#reducing next_layer
+   awk '{n[NR]=$1;tot[NR]=$0
+   }
+   END{
+   i=1
+   while(i<=NR){
+     j=1
+     skip=0
+     while(j<=i-1){
+       if(n[j]==n[i]) skip=1
+       j++
+       }
+     if(skip==0) print tot[i]
+     i++
+     }
+   }' next_layer >next_layer.out
+
+
+   rm -f next_layer
+   set `awk '{print NR}' next_layer.out` 
+   for i
+   do
+     min=`awk 'NR=='$i',NR=='$i'{print $1}' next_layer.out` 
+     spox=`awk 'NR=='$i',NR=='$i'{print $2}' next_layer.out` 
+     spoy=`awk 'NR=='$i',NR=='$i'{print $3}' next_layer.out` 
+   ###
+     p=`awk 'NR=='$i',NR=='$i'{print $2/sqrt($2*$2)}' next_layer.out` 
+     awk '/MIN/{if($2=='$min') {
+         p='$p'
+         print "set arrow from  ",'$spox',",",'$spoy'," to ",'$spox'+4*p,",",$6,"nohead lw 1"
+         print "set arrow from  ",'$spox'+4*p,",",$6" to ",'$spox'+8*p,",",$6,"nohead lw 1"
+         print "set arrow from  ",'$spox'+8*p,",",$6,"to ",'$spox'+12*p,",",$NF,"nohead lw 1"
+         if($7=="MIN") print "set arrow from  ",'$spox'+12*p,",",$NF" to ",'$spox'+16*p,",",$NF,"nohead lw 1"
+         if($7=="MIN") {
+           print $8,'$spox'+16*p,$NF >> "next_layer"
+          }
+         if($7=="PRO") print "set arrow from  ",'$spox'+12*p,",",$NF" to ",'$spox'+20*p,",",$NF,"nohead lw 1"
+         if(p==1)  print "set label \""$5"\" at",'$spox'+4*p,","$6+'$delta'," font \"Arial-Bold,12\" textcolor rgbcolor \"red\""
+         if(p==-1) print "set label \""$5"\" at",'$spox'+8*p,","$6+'$delta'," font \"Arial-Bold,12\" textcolor rgbcolor \"red\""
+         if(p==1  && $7=="MIN" ) print "set label \""$8"\" at",'$spox'+12*p,","$NF+'$delta'," font \"Arial-Bold,12\" "
+         if(p==-1 && $7=="MIN" ) print "set label \""$8"\" at",'$spox'+16*p,","$NF+'$delta'," font \"Arial-Bold,12\" "
+         if(p==1  && $7=="PRO" ) print "set label \""$8"\" at",'$spox'+12*p,","$NF+'$delta'," font \"Arial-Bold,12\" "
+         if(p==-1 && $7=="PRO" ) print "set label \""$8"\" at",'$spox'+20*p,","$NF+'$delta'," font \"Arial-Bold,12\" "
+         }
+   
+     }' plotdat0.out >> diagram_middle
+
+###
+
+   done
+
+done
+
+awk '/at/{print $5}' diagram_middle | sed 's/,/ /g' | awk '{print $1}' >xmami
+awk 'BEGIN{max=-1e20;min=1d20}
+{if($1<min) min=$1
+if($1>max) max=$1
+}
+END{print 1.05*min,1.05*(max+8)}' xmami >xmami.out
+xmin=`awk '{print $1}' xmami.out`
+xmax=`awk '{print $2}' xmami.out`
+
+sed 's/ymin/'$emin'/g' diagram_template0 | sed 's/ymax/'$emax'/g' | sed 's/xmin/'$xmin'/g' | sed 's/xmax/'$xmax'/g' | sed 's/titulo/'"$method"' profile/g'  >diagram_template0.out
+
+cat diagram_template0.out diagram_middle diagram_template1 >diagram.gnu
+
+echo "making the plot"
+#module avail &>ma
+#gnuvrs=`awk '/gnuplot/{vrs=$1};END{print vrs}' ma`
+#if [ ! -z "$gnuvrs" ]; then
+#   module load $gnuvrs
+#fi
+gnuplot diagram.gnu

@@ -1,0 +1,30 @@
+--General--
+molecule  FA
+LowLevel  pm7 
+HighLevel b3lyp/6-31g(d,p)
+HL_rxn_network complete
+charge 0
+mult   1
+
+--Method--
+sampling    MD
+temp        10
+nbondsform  1
+4 5
+nbondsbreak 2
+3 5
+1 4
+kapparep    200
+kappa       100
+iexp        1.0
+rmin        0.5
+
+--Screening--
+imagmin 200
+MAPEmax 0.0001
+BAPEmax 1 
+eigLmax 0.1
+
+--Kinetics--
+Energy 150
+
