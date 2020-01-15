@@ -32,13 +32,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Once you have downloaded the source code, untar and unzip the file:
 
 ```
-tar xvfz Amk-SOURCE-2018.tar.gz
+tar xvfz Amk-SOURCE-2020.tar.gz
 ```
 
 or clone the code from github:
 
 ```
-git clone https://github.com/emartineznunez/AutoMeKin.git AutoMeKin
+git clone https://github.com/emartineznunez/AutoMeKin2020.git AutoMeKin
 ```
 
 ### DEPENDENCIES
@@ -64,7 +64,7 @@ The program employs python3 and the following python3 libraries are needed:
 - **[NumPy](https://www.numpy.org/)**
 - **[SciPy](https://www.scipy.org/)**
 
-You can install the missing ones manually, or you can use the scripts located in amk-SOURCE-2018 and called install-required-packages-distro.sh (where distro=ubuntu-16.4lts, centos7 or sl7), which will do the work for you. The ubuntu-16.4lts script installs all dependencies, but for the RHEL derivatives (centos7 and sl7) you have to install parallel separately, and you have two choices:
+You can install the missing ones manually, or you can use the scripts located in amk-SOURCE-2020 and called install-required-packages-distro.sh (where distro=ubuntu-16.4lts, centos7 or sl7), which will do the work for you. The ubuntu-16.4lts script installs all dependencies, but for the RHEL derivatives (centos7 and sl7) you have to install parallel separately, and you have two choices:
 
 1. **install-gnu-parallel-from-source.sh**. This script installs parallel latest version from source thanks 
 to Ole Tange (the author). Also it can fallback to a user private installation into $HOME/bin 
@@ -93,10 +93,10 @@ Go to AutoMeKin if you cloned it from github
 cd AutoMeKin
 ```
 
-or go to the amk-SOURCE-2018 folder, if you downloaded the tarball.
+or go to the amk-SOURCE-2020 folder, if you downloaded the tarball.
 
 ```
-cd amk-SOURCE-2018
+cd amk-SOURCE-2020
 ```
 
 In both cases, the process continues the same way. Now type:
@@ -105,7 +105,7 @@ In both cases, the process continues the same way. Now type:
 ./configure
 ```
 
-This will install amk in $HOME/amk-2018 by default. If you want to install it in a different directory, type:
+This will install amk in $HOME/amk-2020 by default. If you want to install it in a different directory, type:
 
 ```
 ./configure --prefix=path_to_program
@@ -127,16 +127,16 @@ For convenience, and once “Environment Modules” has been installed, you shou
 module use path_to_program/modules
 ```
 
-where path_to_program is the path where you installed amk (e.g., $HOME/amk-2018).
+where path_to_program is the path where you installed amk (e.g., $HOME/amk-2020).
 
 
 ### PROGRAM EXECUTION
 
-To start using any of the scripts of the program, you have to load amk/2018 module:
+To start using any of the scripts of the program, you have to load amk/2020 module:
 
 
 ```
-module load amk/2018
+module load amk/2020
 ```
 
 To run the low-level calculations use:
