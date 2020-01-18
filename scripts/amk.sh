@@ -275,6 +275,12 @@ do
           echo "$freq_template"                   >> ts_opt/$name
           mopac ts_opt/$name 2>/dev/null
           file=ts_opt/${name}.out
+#If too many variables, run ts int
+          if [ $(awk 'BEGIN{f=0};/Too many variables/{f=1};END{print f}' $file) -eq 1 ]; then
+             sed -i 's/ts /ts int /g' ts_opt/$name
+             mopac ts_opt/$name 2>/dev/null
+          fi
+###
           prog=1
        else
 #construct g09 input file
