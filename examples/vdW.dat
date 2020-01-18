@@ -8,7 +8,7 @@ sampling vdW
 rotate   com com 4.0 1.5
 Nassoc   10
 ntraj    1
-fs       500
+fs       1000
 
 --Screening--
 MAPEmax 0.0001
