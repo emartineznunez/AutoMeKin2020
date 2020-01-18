@@ -42,7 +42,7 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
     # Initialise constraints to zero
     e_del_phi = 0
     j=0
-    Call_criteria = True 
+    Frag = False 
 
     # Get current potential energy and check if BXD energy constraints are implemented
     ene = geom.get_potential_energy()
@@ -129,8 +129,10 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
                     if dist >= 5*r0[ii][jj]:
                         print("Fragmentation")
                         print(ii+1,jj+1,dist,r0[ii][jj])
-                        break
-
+                        Frag = True
+        if Frag is True:
+            break
+       
 
 #remove traj.xyz if it exists
 system('rm -rf traj.xyz')
