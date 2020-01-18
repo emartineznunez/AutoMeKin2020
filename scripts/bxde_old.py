@@ -1,20 +1,26 @@
 #!/usr/bin/env python3 
 
-from numpy import zeros
-from os import system
-from sys import argv
+import numpy as np
+import math
+from ase import Atoms
+import io
+import os
+import sys
 from mopacamk import MOPACamk
 from ase.constraints import ExternalForce
 from ase.io import read, write
 from ase.md.velocitydistribution import (MaxwellBoltzmannDistribution,Stationary, ZeroRotation)
 from ase import units
-from Langevin import Langevin
-from re import search
+from numpy.random import standard_normal
+import Langevin
+import re
+import Connectivity
+from ase.optimize import BFGS
 
 def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
 #r0 is a list with the initial distances
     size = len(geom.get_positions())
-    r0 = zeros((size,size))
+    r0 = np.zeros((size,size))
     for i in range(0,size):
         for j in range(i+1,size):
             r0[i][j]=geom.get_distance(i,j)
@@ -34,6 +40,7 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
 #    geom.set_constraint(c) 
 ##
 
+    reactionCountDown = 0
 
     vel = geom.get_velocities()
 
@@ -42,7 +49,10 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
     # Initialise constraints to zero
     e_del_phi = 0
     j=0
+    BXDon = True
     Call_criteria = True 
+    Rxn = False
+    Frag = False
 
     # Get current potential energy and check if BXD energy constraints are implemented
     ene = geom.get_potential_energy()
@@ -54,8 +64,8 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
 
     maxEne = ene
     # Then set up reaction criteria or connectivity map
-#    con = BBFS(geom)
-    mdInt = Langevin(units.kB * T, Fric, forces, geom.get_velocities(), geom, timeStep)
+    con = Connectivity.BBFS(geom)
+    mdInt = Langevin.Langevin(units.kB * T, Fric, forces, geom.get_velocities(), geom, timeStep)
 
     #Get forces
     forces = geom.get_forces()
@@ -68,7 +78,7 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
         ene = geom.get_potential_energy()
    
         # Check for boundary hit on lower BXDE
-        if ene < BXDElower:
+        if BXDon and ene < BXDElower:
             hits += 1
             eBounded = True
             geom.set_positions(mdInt.oldPos)
@@ -81,7 +91,7 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
         if hits >= 10:
             BXDElower = ene - 0.1
             print("Getting out of a trapping state")
-            print("New BXDElower",(BXDElower - e0) * 23.06)
+            print("New BXDElower",(BXDElower - e0)*23.06)
 #hits is a new variable to escape from trappings
 
         #check if we have passed upper boundary
@@ -89,7 +99,9 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
             j = 0
             BXDElower = BXDEupper - 0.1
             BXDEupper = BXDElower + 50000
-            print("New BXDElower",(BXDElower - e0) * 23.06) 
+            print("readjust boundaries") 
+            e = (BXDElower - e0)*23.06
+            print(e)
         if j < adapLimit and eBounded == False:
             j += 1
             if ene > maxEne:
@@ -112,48 +124,74 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
         mdInt.mdStepVel(forces,timeStep,geom)
 
         #Print current positions to file
-        idt1 = int(1/dt)
-        idt2 = int(20/dt)
-        if i % idt1 == 0:
+        idt = int(1/dt)
+        if i % idt == 0:
             write("traj.xyz",geom.copy(),format="xyz",append=True)
-            e = ( ene - e0 ) * 23.06
-            print(i*dt,e)
+            e = (ene - e0)*23.06
+            emax=(BXDEupper - e0)*23.06
+            emin=(BXDElower - e0)*23.06
+            print(i*dt,j,e,emin,emax,BXDon,Rxn,reactionCountDown)
 #read bond orders and write them to file bond_order.txt
             for item in geom.calc.get_bond_order():
                  bofile.write(item+' ')
             bofile.write('\n')
-        if i % idt2 == 0:
-            for ii in range(0,size):
-                for jj in range(ii+1,size):
-                    dist = geom.get_distance(ii,jj)
-                    if dist >= 5*r0[ii][jj]:
-                        print("Fragmentation")
-                        print(ii+1,jj+1,dist,r0[ii][jj])
-                        break
+#end of reading bond orders
+        con.update(geom)
+        if Call_criteria is True:
+            Rxn = con.criteriaMet
+#Test to see if there is breakage
+        for ii in range(0,size):
+            for jj in range(ii+1,size):
+                dist = geom.get_distance(ii,jj)
+                if dist >= 5*r0[ii][jj]:
+                    print("Fragmentation")
+                    print(ii+1,jj+1,dist,r0[ii][jj])
+                    Frag = True
+        if Frag is True:
+            break
 
+        if Rxn is True:
+            if reactionCountDown == 0:
+                print("Possible Reaction")
+                print(i*dt,con.ind1,con.ind2,con.ind3)
+                reactionCountDown = window
+                indicies = con.transitionIndices
+            elif reactionCountDown > 1:
+                reactionCountDown -= 1
+                if reactionCountDown >= window - 20*idt:
+                    if i % idt == 0:
+                        print(i*dt,con.ind1,con.ind2,con.ind3)
+                if reactionCountDown < window - 20*idt:
+                    if Call_criteria is True:
+                        print("Reaction confirmed")
+
+                    Call_criteria = False
+        else:
+            BXDon = True
+            reactionCountDown = 0
 
 #remove traj.xyz if it exists
-system('rm -rf traj.xyz')
+os.system('rm -rf traj.xyz')
 
-inputfile = str(argv[1])
+inputfile = str(sys.argv[1])
 xyzfile="opt_start.xyz"
-temp,fric,totaltime,dt,adap,window,method = 1000,0.5,5000,0.5,100,500,'pm7'
+temp,fric,totaltime,dt,adap,window,method = 1000,0.5,5000,0.25,100,500,'pm7'
 inp = open(inputfile, "r")
 for line in inp:
-    if search("temp ", line):
+    if re.search("temp ", line):
         temp = float(line.split()[1])
-    if search("Friction", line):
+    if re.search("Friction", line):
         fric = float(line.split()[1])
-    if search("fs", line):
+    if re.search("fs", line):
         totaltime = int(line.split()[1])
-    if search("Dt", line):
+    if re.search("Dt", line):
         dt = float(line.split()[1])
-    if search("AdaptiveLimit", line):
+    if re.search("AdaptiveLimit", line):
         adap = int(line.split()[1])
-    if search("Window", line):
+    if re.search("Window", line):
         window = int(line.split()[1])
         window = int(window/dt)
-    if search("LowLevel ", line):
+    if re.search("LowLevel ", line):
         method = str(line.split(' ',1)[1]).rstrip()
 rmol = read(xyzfile)
 rmol.calc = MOPACamk(label='bxde', method=method+' PRTXYZ THREADS=1')

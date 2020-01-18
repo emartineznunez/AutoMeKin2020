@@ -17,7 +17,7 @@ dist_bin_SCRIPTS = chemical_formula.sh \
               conf_isomer_ts.sh tsll_view.sh track_view.sh \
               select.sh redo_screening.sh  kinetics.sh \
               slurm_settings_ft2.sh abort.sh remove_ts.sh run_test.sh nx.sh \
-              rxn.py track.py Connectivity.py ConnectTools.py Langevin.py \
+              rxn.py track.py Langevin.py \
               bxde.py check_vdw_atoms.py bots.py mopacamk.py
 
 
