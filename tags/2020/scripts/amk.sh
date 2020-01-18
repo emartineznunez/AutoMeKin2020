@@ -1,7 +1,7 @@
 #!/bin/bash
 source utils.sh
 #On exit remove tmp files
-tmp_files=(ConnMat tmp* ScalMat *.arc *.mop fort.* partial_opt ts_opt *_backup rotate.dat minn black_list*)
+tmp_files=(ConnMat tmp* ScalMat *.arc *.mop fort.* partial_opt ts_opt *_dyn* *_backup rotate.dat minn black_list*)
 trap 'err_report2 $LINENO $gauss_line' ERR
 trap cleanup EXIT INT
 
