@@ -215,12 +215,14 @@ class MOPACamk(FileIOCalculator):
                 nf = [len(line.split()) == 8
                      for line in lines[i + 3:i + 3 + 3 * len(self.atoms)]]
                 if not False in nf:
+                    self.forces_permission = True 
                     forces = [-float(line.split()[6])
                           for line in lines[i + 3:i + 3 + 3 * len(self.atoms)]]
                     self.results['forces'] = np.array(
                         forces).reshape((-1, 3)) * kcal / mol
                 else:
-                    self.results['forces'] = 'huge'
+                    self.forces_permission = False
+                    self.results['forces'] = np.zeros(3 * len(self.atoms))
             elif line.find('EIGENVALUES') != -1:
                 if line.find('ALPHA') != -1:
                     j = i + 1
@@ -287,3 +289,8 @@ class MOPACamk(FileIOCalculator):
         """Bond orders as reported in the Mopac output file
         """
         return self.bond_order
+
+    def get_forces_permission(self):
+        """True or False if forces cannot be read from output file
+        """
+        return self.forces_permission
