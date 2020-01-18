@@ -73,6 +73,7 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
             eBounded = True
             geom.set_positions(mdInt.oldPos)
             e_del_phi = geom.get_forces()
+            if e_del_phi == 'huge': break
         else:
             eBounded = False
             hits = 0
@@ -109,6 +110,7 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
 
         mdInt.mdStepPos(forces,timeStep,geom)
         forces = geom.get_forces()
+        if forces == 'huge': break
         mdInt.mdStepVel(forces,timeStep,geom)
 
         #Print current positions to file
@@ -130,8 +132,7 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
                         print("Fragmentation")
                         print(ii+1,jj+1,dist,r0[ii][jj])
                         Frag = True
-        if Frag is True:
-            break
+        if Frag is True: break
        
 
 #remove traj.xyz if it exists

@@ -212,10 +212,15 @@ class MOPACamk(FileIOCalculator):
                 self.results['magmom'] = abs(self.no_alpha_electrons -
                                              self.no_beta_electrons)
             elif line.find('FINAL  POINT  AND  DERIVATIVES') != -1:
-                forces = [-float(line.split()[6])
+                nf = [len(line.split()) == 8
+                     for line in lines[i + 3:i + 3 + 3 * len(self.atoms)]]
+                if not False in nf:
+                    forces = [-float(line.split()[6])
                           for line in lines[i + 3:i + 3 + 3 * len(self.atoms)]]
-                self.results['forces'] = np.array(
-                    forces).reshape((-1, 3)) * kcal / mol
+                    self.results['forces'] = np.array(
+                        forces).reshape((-1, 3)) * kcal / mol
+                else:
+                    self.results['forces'] = 'huge'
             elif line.find('EIGENVALUES') != -1:
                 if line.find('ALPHA') != -1:
                     j = i + 1
