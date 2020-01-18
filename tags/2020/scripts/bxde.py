@@ -72,7 +72,9 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
             hits += 1
             eBounded = True
             geom.set_positions(mdInt.oldPos)
-            if geom.calc.get_forces_permission() == False: break
+            if geom.calc.get_forces_permission() == False: 
+                print('Forces cannot be read from bxde.out')
+                break
             e_del_phi = geom.get_forces()
         else:
             eBounded = False
@@ -109,7 +111,9 @@ def runTrajectory(geom, T, Fric, totaltime, dt, adapLimit,window):
             mdInt.constrain(e_del_phi)
 
         mdInt.mdStepPos(forces,timeStep,geom)
-        if geom.calc.get_forces_permission() == False: break
+        if geom.calc.get_forces_permission() == False: 
+            print('Forces cannot be read from bxde.out')
+            break
         forces = geom.get_forces()
         mdInt.mdStepVel(forces,timeStep,geom)
 

@@ -222,7 +222,8 @@ class MOPACamk(FileIOCalculator):
                         forces).reshape((-1, 3)) * kcal / mol
                 else:
                     self.forces_permission = False
-                    self.results['forces'] = np.zeros(3 * len(self.atoms))
+                    self.results['forces'] = np.array (
+                        np.zeros(3 * len(self.atoms)) ).reshape((-1, 3)) * kcal / mol
             elif line.find('EIGENVALUES') != -1:
                 if line.find('ALPHA') != -1:
                     j = i + 1
