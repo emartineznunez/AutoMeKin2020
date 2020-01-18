@@ -650,6 +650,8 @@ if [ $postp_alg -ge 1 ]; then
       if [ -s tmp_err ]; then
          echo "check the path of tsdirll folder"
          exit
+      else
+         rm -rf tmp_err
       fi
    fi
 fi
