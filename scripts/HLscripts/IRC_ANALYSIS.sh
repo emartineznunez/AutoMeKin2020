@@ -85,9 +85,7 @@ do
      echo '' >> mingeom
      get_geom_g09.sh $i >> mingeom
      echo "1" $natom > sprint.dat
-     createMat.py mingeom 2 $nA
-     cat ConnMat >> sprint.dat
-     createMat.py mingeom 1 $nA
+     createMat.py mingeom 3 $nA
      cat ConnMat >> sprint.dat
      sprint2.exe <sprint.dat >sprint.out
 
@@ -194,9 +192,7 @@ do
   echo '' >> mingeom
   get_geom_g09.sh ${tsdirhl}/IRC/${name}.log >>mingeom
   echo "1" $natom > sprint.dat
-  createMat.py mingeom 2 $nA
-  cat ConnMat >> sprint.dat
-  createMat.py mingeom 1 $nA
+  createMat.py mingeom 3 $nA
   cat ConnMat >> sprint.dat
   sprint2.exe <sprint.dat >sprint.out
   paste <(awk 'NF==4{print $1}' mingeom) <(deg.sh) >deg.out
