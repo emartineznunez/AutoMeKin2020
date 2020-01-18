@@ -84,7 +84,7 @@ KMC.sh >/dev/null
 echo "  Optimizing frags   "
 PRODs.sh >/dev/null
 echo ""
-echo "Making FINAL_HL_${molecule}"
+echo "Making final folder: FINAL_HL_${molecule}"
 FINAL.sh >/dev/null 
 echo ""
 echo "END OF THE CALCULATIONS"
