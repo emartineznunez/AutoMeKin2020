@@ -8,7 +8,6 @@ mult   1
 
 --Method--
 sampling BXDE 
-Dt       0.5
 fs       2000
 ntraj    1
 
