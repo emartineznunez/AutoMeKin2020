@@ -1,13 +1,14 @@
 #!/usr/bin/env python3.6
-import networkx as nx
-import numpy as np
-import sys
+from networkx import Graph, adjacency_matrix
+from numpy import genfromtxt, heaviside
+from sys import argv
 from ase.io import read
 
 #weig = 1 (integer numbers)
 #weig = 2 (float numbers)
-syst = str(sys.argv[1])
-weig = int(sys.argv[2])
+#weig = 3 (both: float and integer)
+syst = str(argv[1])
+weig = int(argv[2])
 
 rmol = read(syst)
 #Setting up initial stuff
@@ -15,8 +16,8 @@ natom  = len(rmol)
 d      = rmol.get_all_distances(mic=False, vector=False)
 symb   = rmol.get_chemical_symbols()
 ###
-if len(sys.argv) == 4:
-   na=int(sys.argv[3])
+if len(argv) == 4:
+   na=int(argv[3])
 else:
    na=natom
 ##Three files are written here: Labels, ConnMat, ScalMat
@@ -28,7 +29,7 @@ if natom == 1:
    outputfile2.write('0\n')
    exit()
 ###
-sx1,sx2,d_ref,bondtype = np.genfromtxt("thdist",dtype="|U5",unpack=True)
+sx1,sx2,d_ref,bondtype = genfromtxt("thdist",dtype="|U5",unpack=True)
 dict_ref = {}
 for i in range(len(d_ref)):
     dict_ref[sx1[i]+sx2[i]] = float(d_ref[i])
@@ -36,14 +37,15 @@ for i in range(len(d_ref)):
         dict_ref[sx2[i]+sx1[i]] = float(d_ref[i])
 
 if na < natom:
-   sx1,sx2,d_ref,bondtype = np.genfromtxt("thdist_vdw",dtype="|U5",unpack=True)
+   sx1,sx2,d_ref,bondtype = genfromtxt("thdist_vdw",dtype="|U5",unpack=True)
    dict_ref_vdw = {}
    for i in range(len(d_ref)):
        dict_ref_vdw[sx1[i]+sx2[i]] = float(d_ref[i])
        if sx1[i] != sx2[i]:
            dict_ref_vdw[sx2[i]+sx1[i]] = float(d_ref[i])
 
-G   = nx.Graph()
+G1   = Graph()
+G2   = Graph()
 for i in range(natom):
     for j in range(i+1,natom):
         if j < na or i >= na:
@@ -54,17 +56,25 @@ for i in range(natom):
            outputfile3.write(str ( dict_ref_vdw[ symb[i] + symb[j] ] )+' \n' )
            ratio = d[i][j] / 1.1 / dict_ref_vdw[ symb[i] + symb[j] ]
            diff  = d[i][j] - 1.1 * dict_ref_vdw[ symb[i] + symb[j] ]
-        if weig == 1:
-           weight = int(np.heaviside(-diff,0))
-        elif weig == 2:
-           weight = round( (1 - ratio**6) / (1 - ratio**12),5 )
-        G.add_edge(i,j,weight=weight)
+        weight1 = int(heaviside(-diff,0))
+        weight2 = round( (1 - ratio**6) / (1 - ratio**12),5 )
+        G1.add_edge(i,j,weight=weight1)
+        G2.add_edge(i,j,weight=weight2)
 
 #Printing connectivity matrix
-blank=' '
-A=nx.adjacency_matrix(G)
-Ar=A.A
-for row in Ar:
-    for item in row:
-        outputfile2.write(str(item)+blank)
-    outputfile2.write('\n')
+blank = ' '
+A = adjacency_matrix(G1)
+Ar1 = A.A
+A = adjacency_matrix(G2)
+Ar2 = A.A
+if weig >=2:
+   for row in Ar2:
+       for item in row:
+           outputfile2.write(str(item)+blank)
+       outputfile2.write('\n')
+if weig !=2:
+   for row in Ar1:
+       for item in row:
+           outputfile2.write(str(item)+blank)
+       outputfile2.write('\n')
+

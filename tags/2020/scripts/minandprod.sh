@@ -44,9 +44,7 @@ do
    echo $name
    sqlite3 ${tsdirll}/MINs/min.db "select natom,geom from min where name='$name'" | sed 's@|@\n\n@g'  >mingeom
    echo "1" $natom > sprint.dat
-   createMat.py mingeom 2 $nA
-   cat ConnMat >> sprint.dat
-   createMat.py mingeom 1 $nA
+   createMat.py mingeom 3 $nA
    cat ConnMat >> sprint.dat
    sprint2.exe <sprint.dat >sprint.out
 
