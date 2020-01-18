@@ -14,7 +14,7 @@ EXTRA_DIST = license.txt \
 	     install-gnu-parallel-from-source.sh \
 	     install-required-packages-centos7.sh \
 	     install-required-packages-ubuntu-16.4lts.sh \
-	     install-required-packages-sl7.sh
+	     install-required-packages-sl7.sh README.md
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
