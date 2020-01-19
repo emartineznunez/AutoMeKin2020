@@ -1,10 +1,14 @@
-## AutoMeKin
+# AutoMeKin
+
+<p align="center">
+   <img src="automekinh.png" alt="alt text" width="400" height="200">
+</p>
 
 AutoMeKin (formerly known as tsscds) is a computer program that has been designed to discover reaction mechanisms and solve the kinetics in an automated fashion. AutoMeKin obtains transition state guess structures from trajectory simulations of the highly vibrationally excited species. From the obtained TS structures, minima and product fragments are determined following the intrinsic reaction coordinate. Finally, having determined the stationary points, the reaction network is constructed and the kinetics is solved. The program is interfaced with MOPAC2016 and Gaussian 09 (G09).
 
 A computer program for finding reaction mechanisms and solving the kinetics.
 
-## Authors
+## AUTHORS
 
 * George L. Barnes
 * David R. Glowacki
@@ -41,7 +45,7 @@ or clone the code from github:
 git clone https://github.com/emartineznunez/AutoMeKin2020.git AutoMeKin
 ```
 
-### DEPENDENCIES
+## DEPENDENCIES
 
 Before installing amk for the first time, be aware that the following packages are needed:
 
@@ -83,7 +87,7 @@ These packages might also be useful to analyze the results:
 1. **[molden](http://cheminf.cmbi.ru.nl/molden/)**
 2. **[sqlitebrowser](https://github.com/sqlitebrowser/sqlitebrowser)**
 
-### INSTALLATION
+## INSTALLATION
 
 Once the above packages are installed, either:
 
@@ -130,7 +134,7 @@ module use path_to_program/modules
 where path_to_program is the path where you installed amk (e.g., $HOME/amk-2020).
 
 
-### PROGRAM EXECUTION
+## PROGRAM EXECUTION
 
 To start using any of the scripts of the program, you have to load amk/2020 module:
 
