@@ -191,6 +191,14 @@ do
   echo $natom > mingeom
   echo '' >> mingeom
   get_geom_g09.sh ${tsdirhl}/IRC/${name}.log >>mingeom
+##If the calc. was not done skip this minimum
+  anlf=$(wc -l mingeom | awk '{print $1}')
+  nlmg=$(($natom+2))
+  if [ $anlf -lt $nlmg ]; then
+     echo "Double check this opt: $name"
+     continue
+  fi
+##
   echo "1" $natom > sprint.dat
   createMat.py mingeom 3 $nA
   cat ConnMat >> sprint.dat
