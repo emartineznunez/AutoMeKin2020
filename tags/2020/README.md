@@ -60,14 +60,6 @@ Before installing amk for the first time, be aware that the following packages a
 - **[SQLite](https://www.sqlite.org/index.html)** (version >= 3)
 - **[Zenity](https://wiki.gnome.org/Projects/Zenity)**
 
-The program employs python3 and the following python3 libraries are needed:
-
-- **[ASE](https://wiki.fysik.dtu.dk/ase/)**
-- **[Matplotlib](https://matplotlib.org/)**
-- **[NetworkX](https://networkx.github.io/)**
-- **[NumPy](https://www.numpy.org/)**
-- **[SciPy](https://www.scipy.org/)**
-
 You can install the missing ones manually, or you can use the scripts located in amk-SOURCE-2020 and called install-required-packages-distro.sh (where distro=ubuntu-16.4lts, centos7 or sl7), which will do the work for you. The ubuntu-16.4lts script installs all dependencies, but for the RHEL derivatives (centos7 and sl7) you have to install parallel separately, and you have two choices:
 
 1. **install-gnu-parallel-from-source.sh**. This script installs parallel latest version from source thanks 
@@ -75,6 +67,14 @@ to Ole Tange (the author). Also it can fallback to a user private installation i
 if you have not administrator permisions to install it globally.
 
 2. **install-gnu-parallel-from-epel.sh**. Enables the EPEL repository and installs parallel from it.
+
+The program employs python3 and the following python3 libraries are needed:
+
+- **[ASE](https://wiki.fysik.dtu.dk/ase/)**
+- **[Matplotlib](https://matplotlib.org/)**
+- **[NetworkX](https://networkx.github.io/)**
+- **[NumPy](https://www.numpy.org/)**
+- **[SciPy](https://www.scipy.org/)**
 
 The program runs using two levels of theory: semiempirical (or Low-Level LL) and ab initio/DFT (or High-Level HL). So far, the only program interfaced with amk to perform the ab initio/DFT calculations is G09. Therefore, if you want to perform the HL calculations G09 should be installed and should run like in this example:
 
