@@ -24,8 +24,8 @@ class MOPACamk(FileIOCalculator):
 
     default_parameters = dict(
         method='PM7',
-        task='1SCF GRADIENTS bonds',
-        relscf=0.01)
+        task='1SCF GRADIENTS',
+        relscf=0.0001)
 
     methods = ['AM1', 'MNDO', 'MNDOD', 'PM3', 'PM6', 'PM6-D3', 'PM6-DH+',
                'PM6-DH2', 'PM6-DH2X', 'PM6-D3H4', 'PM6-D3H4X', 'PMEP', 'PM7',
@@ -223,7 +223,7 @@ class MOPACamk(FileIOCalculator):
                 else:
                     self.forces_permission = False
                     self.results['forces'] = np.array (
-                        np.zeros(3 * len(self.atoms)) ).reshape((-1, 3)) * kcal / mol
+                        np.zeros(3 * len(self.atoms)) ).reshape((-1, 3)) 
             elif line.find('EIGENVALUES') != -1:
                 if line.find('ALPHA') != -1:
                     j = i + 1

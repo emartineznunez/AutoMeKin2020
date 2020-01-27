@@ -163,7 +163,7 @@ for line in inp:
     if search("LowLevel ", line):
         method = str(line.split(' ',1)[1]).rstrip()
 rmol = read(xyzfile)
-rmol.calc = MOPACamk(label='bxde', method=method+' PRTXYZ THREADS=1')
+rmol.calc = MOPACamk(label='bxde', method=method, task='1SCF GRADIENTS BONDS PRTXYZ THREADS=1', relscf=0.01)
 print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 print("    BXDE input parameters    ")
 print("    Temperature(K) = ",temp)
