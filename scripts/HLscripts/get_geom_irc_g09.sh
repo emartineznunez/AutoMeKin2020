@@ -13,6 +13,7 @@ while(i<=huge){
   getline
   if(NF==1) break
   if(NF==6 && $4=="NaN") break
+  if(NF==6 && $4~/Inf/) break
   if(NF==6) n[i]=$2
   if(NF==6) x[i]=$4
   if(NF==6) y[i]=$5
