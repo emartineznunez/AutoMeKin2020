@@ -11,7 +11,6 @@ mkdir ${batch}
 #copy neccesary files.
 cp amk.dat $2.xyz ${batch}
 echo "tsdirll $3/tsdirLL_$2"  >> ${batch}/amk.dat
-if [ -f thdist  ]; then cp thdist* ${batch} ; fi
 ##copy frags only if sampling is vdw
 copyfrags=$(awk 'BEGIN{cf=0};{if($1=="sampling" && $2=="vdW") cf=1};END{print cf}'  amk.dat)
 if [ $copyfrags -eq 1 ]; then

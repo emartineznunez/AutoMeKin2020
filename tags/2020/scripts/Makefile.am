@@ -1,5 +1,5 @@
 dist_bin_SCRIPTS = chemical_formula.sh \
-	      createMat.py createthdist.py \
+	      createMat.py AMK_parameters.py \
 	      deg_form.sh deg.sh diffGT.sh FormulaMOL.sh \
 	      diff.sh format.sh FormulaPROD.sh get_freq_mopac.sh \
 	      get_geom_mopac.sh getminfminr.sh get_minn.sh  \

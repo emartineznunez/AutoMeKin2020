@@ -70,7 +70,6 @@ fi
 keywords_check
 ###
 ### ${molecule}.xyz and/or ${frA}.xyz ${frB}.xyz file check
-### and create thdist and (eventually) thdist_vdw reference files
 xyzfiles_check
 ##
 sampling_calcs

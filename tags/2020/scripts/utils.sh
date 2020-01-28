@@ -171,7 +171,6 @@ function read_input {
    if [ -f ${molecule}.xyz ]; then
       natom=$(awk 'NR==1{print $1}' ${molecule}.xyz)
    fi
-   thd=$(awk 'BEGIN{f=0};{if($1=="NOcreatethdist") f=1};END{print f}' $inputfile)
 #   fragments=$(awk 'BEGIN{f=0};{if($1=="fragments" && $2=="yes") f=1};{if($1=="fragments" && $2=="no") f=0};END{print f}' $inputfile)
    charge=$(awk 'BEGIN{ch=0};{if($1=="charge") ch=$2};END{print ch}' $inputfile)
    multiple_minima=$(awk 'BEGIN{mm=1};{if($1=="multiple_minima" && $2=="yes") mm=1};{if($1=="multiple_minima" && $2=="no") mm=0};END{print mm}' $inputfile)
@@ -368,7 +367,6 @@ if [ $sampling -lt 30 ]; then
       awk 'NR==1{natom=$1;print natom"\n";getline
            for(i=1;i<=natom;i++) {getline; print $1,$2,$3,$4} }' ${molecule}.xyz > tmp && mv tmp ${molecule}.xyz 
 ##create reference distances : cov
-      createthdist.py 0 $molecule $natom ${AMK}
    fi
 else
    if [ ! -f ${frA}.xyz ]; then
@@ -393,16 +391,11 @@ else
       xyzfile=tmp_AB
    fi
 ##check_vdw_atoms
-   ok=$(check_vdw_atoms.py $xyzfile ${AMK})
+   ok=$(check_vdw_atoms.py $xyzfile)
    if [ $ok -eq 0 ];then
       echo Some of the atoms in your structure cannot be treated with this sampling
       exit
    fi
-##create reference distances : cov and vdw
-   createthdist.py 0 $xyzfile $natom ${AMK}
-   mv thdist thdist_full
-   createthdist.py 0 $xyzfile $nA ${AMK}
-   mv thdist_full thdist
 fi
 echo "Number of atoms       =" $natom
 met=$(echo $method | sed 's/threads=1//')
