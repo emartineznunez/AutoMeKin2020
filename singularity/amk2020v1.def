@@ -1,0 +1,82 @@
+BootStrap: library
+From: centos:7
+
+%post
+    yum -y install epel-release
+    yum -y update
+    yum -y install redhat-lsb yum-utils git make automake libtool autoconf bc which environment-modules gawk gcc gnuplot gcc-gfortran parallel sqlite zenity vim-common vim-minimal vim-enhanced vim-filesystem python3-pip openblas
+    update-mime-database /usr/share/mime
+    pip3 install ase
+    pip3 install networkx
+    mkdir /install_dir
+    cd /install_dir
+    curl -O https://rxnkin.usc.es/images/2/2f/Amk-SOURCE-2020.tar.gz
+    tar zxvf Amk-SOURCE-2020.tar.gz
+    cd amk-SOURCE-2020
+#    git clone https://github.com/emartineznunez/AutoMeKin2020.git
+#    cd AutoMeKin2020
+#    autoreconf --i
+    ./configure --prefix=/opt/AutoMeKin
+    make
+    make install
+    rm -f /opt/AutoMeKin/modules/amk/2020ft2
+    cd /install_dir
+    curl -O ftp://ftp.cmbi.umcn.nl/pub/molgraph/molden/bin/Linux/molden6.2.full.ubuntu.64.tar.gz
+    cd /opt
+    tar zxvf /install_dir/molden6.2.full.ubuntu.64.tar.gz
+    cd /
+    cat > /etc/profile.d/zzz-AutoMeKinsetup.sh  << EOF
+# /etc/profile.d/zzz-AutoMeKinsetup.sh
+# vim:tabstop=2:autoindent:
+#
+export MODULEPATH=/opt/AutoMeKin/modules:\$MODULEPATH
+export PATH=/opt/molden:\$PATH
+module load amk/2020
+EOF
+    cat > /getAutoMeKinshell.sh << EOF
+#!/bin/bash
+source /etc/profile.d/modules.sh
+export MODULEPATH=/opt/AutoMeKin/modules:\$MODULEPATH
+export PATH=/opt/molden:\$PATH
+amk_prompt () {
+    if [ $? -eq 0 ]; then # set an error string for the prompt, if applicable
+        ERRPROMPT=" "
+    else
+        ERRPROMPT='->(\$?) '
+    fi
+    GREEN="\[\033[0;32m\]"
+    CYAN="\[\033[0;36m\]"
+    BCYAN="\[\033[1;36m\]"
+    BLUE="\[\033[0;34m\]"
+    GRAY="\[\033[0;37m\]"
+    DKGRAY="\[\033[1;30m\]"
+    WHITE="\[\033[1;37m\]"
+    RED="\[\033[0;31m\]"
+    # return color to Terminal setting for text color
+    DEFAULT="\[\033[0;39m\]"
+    export PS1="\${CYAN}[ \${GREEN}\${containername} \${amkinterfaces}\${DKGRAY} \$(date +%k:%M:%S) \${CYAN}]\${RED}\$ERRPROMPT${GRAY}\w\n\${DEFAULT}$ "
+}
+export -f amk_prompt 
+export LANG=C
+export PROMPT_COMMAND=amk_prompt
+echo "AutoMeKin 2020 (https://rxnkin.usc.es/index.php/AutoMeKin)"
+echo "MOLDEN 6.2: molden"
+echo "Gnuplot 4.6: gnuplot"
+module load amk/2020
+#G09 setup based on a bind in /opt
+if [ -f /opt/g09/bsd/g09.profile ]
+  then
+  export g09root=/opt
+  source /opt/g09/bsd/g09.profile
+fi
+export XDG_RUNTIME_DIR=\$(mktemp --tmpdir -d \$(id -u)-XXXXXX)
+/bin/bash --noprofile --norc
+EOF
+    chmod +x /getAutoMeKinshell.sh
+    rm -rf /install_dir
+
+%runscript
+    /getAutoMeKinshell.sh
+
+%labels
+    Author emartineznunez

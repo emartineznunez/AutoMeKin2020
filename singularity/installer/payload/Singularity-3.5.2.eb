@@ -1,0 +1,110 @@
+# Start
+easyblock = 'ConfigureMake'
+
+name = 'Singularity'
+version = '3.5.2'
+
+homepage = 'http://singularity.lbl.gov'
+description = """Singularity is a portable application stack packaging and runtime utility."""
+
+toolchain = {'name': 'system', 'version': ''}
+
+source_urls = ['https://github.com/sylabs/singularity/releases/download/v%(version)s']
+sources = ['%(namelower)s-%(version)s.tar.gz']
+
+dependencies = [
+    ('Squashfs', '4.3'),
+]
+
+# mconfig -> configure
+
+preconfigopts = 'mkdir gopath; export GOPATH=$(pwd)/gopath && export GO111MODULE=off && go get -u -v github.com/golang/dep/cmd/dep && ' \
+    'mv mconfig configure && ' \
+    'mkdir -p $GOPATH/src/github.com/sylabs/ && '\
+    'ln -s $PWD $GOPATH/src/github.com/sylabs/singularity && '
+# check localstatedir demands
+configopts = '--without-suid --localstatedir=/tmp'
+
+# make -C builddir && make -C builddir install
+prebuildopts = 'ulimit -Ss 8192 && export GOPATH=$(pwd)/gopath && '
+buildopts = '-C builddir && make -C builddir install'
+skipsteps = ['install']
+
+
+# Post installation cmds
+local_SINGULARITY_CONFIG_PATH = '%(installdir)s/etc/singularity/singularity.conf'
+local_SINGULARITY_WRAPPER = '%(installdir)s/bin/singularity'
+local_SINGULARITY_BIN = '%(installdir)s/bin/_singularity'
+postinstallcmds = [
+#    'rm -fr $GOPATH/src/github.com/sylabs',
+    'SQUASHFSPATH=$(echo $EBROOTSQUASHFS/mksquashfs | '\
+        'sed \'s/\\//\\\\\\//g\') && '\
+    'sed \'s/# mksquashfs path =/mksquashfs path = \'$SQUASHFSPATH\'/g\' '\
+    '{conf} > {conf}.new'.format(
+            conf = local_SINGULARITY_CONFIG_PATH
+        ),
+    'mv {conf}.new {conf}'.format(
+            conf = local_SINGULARITY_CONFIG_PATH
+        ),
+    'mv {wrapper} {bin}'.format(
+            wrapper = local_SINGULARITY_WRAPPER,
+            bin = local_SINGULARITY_BIN
+        ),
+    'echo \'#!/bin/bash\' > {wrapper} && '\
+    'echo \'ulimit -Ss 8192\' >> {wrapper} && '\
+    'echo \'{bin} $@\' >> {wrapper}'.format(
+            wrapper = local_SINGULARITY_WRAPPER,
+            bin = local_SINGULARITY_BIN
+        ),
+    'chmod 755 {wrapper}'.format(wrapper=local_SINGULARITY_WRAPPER)
+    
+]
+
+
+# End
+sanity_check_paths = {
+    'files': [
+            'bin/run-singularity', 
+            'bin/singularity', 
+            'etc/singularity/singularity.conf'
+        ],
+    'dirs': ['etc', 'libexec/singularity'],
+}
+
+
+moduleclass = 'tools'
+
+modluafooter = 'add_property("type0","area_tools")'
+
+usage = """local_
+\033[94mINTERACTIVE USE:\033[0m
+\tmodule load ]] .. modhier() .. [[\n\n
+\tDownload container:
+\t\tsingularity pull <Container URI>\n
+\tRun container:
+\t\tsingularity run <Container path>\n
+\tExecute command:
+\t\tsingularity exec <Container> <Command>\n
+\tOpen shell:
+\t\tsingularity shell <Container>\n
+\tSearch containers:
+\t\tsingularity search <String>\n
+
+\033[94mRECOMENDED OPTIONS:\033[0m
+
+
+\033[94mSPECIFIC INFO:\033[0m
+\tsingularity help
+\tsingularity help <Command>
+"""
+
+examples = """
+Run hello world like container:\n
+\tmodule load ]] .. modhier() .. [[\n
+\tsingularity pull lolcow.sif library://sylabsed/examples/lolcow:latest
+\tsingularity run lolcow.sif
+
+"""
+
+docurls = [ 'https://www.sylabs.io/guides/%(version_major_minor)s/user-guide/' ]
+

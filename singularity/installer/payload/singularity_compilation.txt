@@ -1,0 +1,6 @@
+To be installed using easybuild (https://easybuilders.github.io/easybuild) under a centos7
+
+EASYBUILD_INSTALLPATH=/tmp eb Squashfs-4.3.eb 
+EASYBUILD_INSTALLPATH=/tmp eb Singularity-3.5.2.eb 
+
+tar  -C /tmp -zcvf singularity.tgz software
