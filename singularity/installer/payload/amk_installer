@@ -1,0 +1,62 @@
+#!/bin/bash
+echo "Running Installer"
+kernelrel=$(uname -r)
+kernelver=(${kernelrel//[.-]/ })
+if (( kernelver[0] < 3 ))
+then 
+  echo "Kernel release: $kernelrel"
+  echo "Kernel 3 or higher needed"
+  exit 0
+fi
+#check user.max_user_namespaces
+MAXUSERNAMESPACES=$(sysctl -n user.max_user_namespaces 2>/dev/null)
+if (( ${MAXUSERNAMESPACES:-0} == 0 ))
+then 
+  echo "user.max_user_namespaces = 0"
+  echo "Please run as (admin) root: "
+  echo ""
+  echo "(sudo) sysctl user.max_user_namespaces=15076 "
+  echo ""
+  echo "To enable it permanently after a reboot, as root:"
+  echo ""
+  echo "echo "user.max_user_namespaces=15076" >> /etc/sysctl.conf"
+  echo ""
+  echo "Otherwise the automekin2020_automekin2020 container will not run"
+  exit 0
+fi
+
+tar zxf ./singularity.tgz -C /tmp
+mkdir -p /tmp/singularity/mnt/session
+export PATH=/tmp/software/Squashfs/4.4:/tmp/software/Singularity/3.5.2/bin:$PATH
+cd $HOME
+
+AMKREL=$(singularity search automekin2020 | grep "Tags:" | awk 'BEGIN{tag=872}{if($2>tag)tag=$2}END{print tag}')
+SIGLIB="library://emartineznunez/default/automekin2020:$AMKREL"
+SIF=$HOME/automekin2020_${AMKREL}.sif
+if [ ! -f $SIF ]
+then
+   singularity pull --arch amd64 $SIF $SIGLIB 
+   echo "Verifying ..."
+   singularity verify $SIF
+fi
+
+AMK_INSTANCE=${AMK_INSTANCE:-automekin_$AMKREL}
+
+export SINGULARITYENV_containername=$AMK_INSTANCE
+if G09DIR=$(dirname $(which g09 2> /dev/null) 2> /dev/null)
+then
+  export SINGULARITYENV_amkinterfaces="(g09)"
+  export SINGULARITYENV_PREPEND_PATH=/opt/g09
+  if [ -d $GAUSS_SCRDIR ]
+    then
+      SINGULARITYENV_GAUSS_SCRDIR=/scratch singularity instance start --bind $G09DIR:/opt/g09 --bind $GAUSS_SCRDIR:/scratch $SIF $AMK_INSTANCE
+    else
+      singularity instance start --bind $G09DIR:/opt/g09 $SIF $AMK_INSTANCE
+    fi
+else
+  echo -e "\e[91mg09 does not seem to be installed in this computer. AutoMeKin's high-level scripts will not work.\e[0m"
+  singularity instance start $SIF $AMK_INSTANCE
+fi
+ 
+singularity run instance://$AMK_INSTANCE
+

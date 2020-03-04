@@ -5,6 +5,50 @@ echo "https://rxnkin.usc.es/index.php/AutoMeKin"
 echo "Self Extracting Installer"
 echo ""
 
+if [ -f /tmp/software/Singularity/3.5.2/bin/singularity -a -f /tmp/software/Singularity/3.5.2/bin/jq ]
+then
+  export PATH=/tmp/software/Squashfs/4.4:/tmp/software/Singularity/3.5.2/bin:$PATH
+  AMKREL=$(singularity search automekin2020 | grep "Tags:" | awk 'BEGIN{tag=872}{if($2>tag)tag=$2}END{print tag}')
+  AMK_INSTANCE=${AMK_INSTANCE:-automekin_$AMKREL}
+  export AMK_INSTANCE
+  if [ "$1" = "stop" ]
+  then
+    img=$(singularity instance list -j | jq -r '.instances[]  | select(.instance == env.AMK_INSTANCE) | .img')
+    if [ -n "$img" ]
+    then
+      todelete=$(dirname $img)
+      singularity instance stop -t 30 $AMK_INSTANCE
+      # sometimes a Timeout happens ...
+      if [ -f $todelete/amk_installer ]
+      then
+        rm -rf $todelete
+      fi
+    fi
+    exit 0
+  fi
+  check_inst=$(singularity instance list -j | jq -r '.instances[]  | select(.instance == env.AMK_INSTANCE) | .instance == env.AMK_INSTANCE')
+  check_inst=${check_inst:-false}
+  if [ "$check_inst" = "true" ]
+  then
+    export SINGULARITYENV_containername=$AMK_INSTANCE
+    if G09DIR=$(dirname $(which g09 2> /dev/null) 2> /dev/null)
+    then
+      export SINGULARITYENV_amkinterfaces="(g09)"
+      export SINGULARITYENV_PREPEND_PATH=/opt/g09
+      if [ -d $GAUSS_SCRDIR ]
+      then
+        SINGULARITYENV_GAUSS_SCRDIR=/scratch singularity run --bind $G09DIR:/opt/g09 --bind $GAUSS_SCRDIR:/scratch instance://$AMK_INSTANCE
+      else
+        singularity run --bind $G09DIR:/opt/g09 instance://$AMK_INSTANCE
+      fi
+    else
+      echo -e "\e[91mg09 does not seem to be installed in this computer. AutoMeKin's high-level scripts will not work.\e[0m"
+      singularity run instance://$AMK_INSTANCE
+    fi
+    exit 0
+  fi
+fi
+
 export TMPDIR=`mktemp -d /tmp/selfextract.XXXXXX`
 
 ARCHIVE=`awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' $0`
@@ -13,10 +57,10 @@ tail -n+$ARCHIVE $0 | tar xz -C $TMPDIR
 
 CDIR=`pwd`
 cd $TMPDIR
-./installer
+./amk_installer $*
 
 cd $CDIR
-rm -rf $TMPDIR
+#rm -rf $TMPDIR
 
 exit 0
 
