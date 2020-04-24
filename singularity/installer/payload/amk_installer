@@ -30,7 +30,7 @@ mkdir -p /tmp/singularity/mnt/session
 export PATH=/tmp/software/Squashfs/4.4:/tmp/software/Singularity/3.5.2/bin:$PATH
 cd $HOME
 
-AMKREL=$(singularity search automekin2020 | grep "Tags:" | awk 'BEGIN{tag=872}{if($2>tag)tag=$2}END{print tag}')
+AMKREL=$(singularity search automekin2020 | grep "Tags:" | awk 'BEGIN{tag=872}{if($NF>tag)tag=$NF}END{print tag}')
 SIGLIB="library://emartineznunez/default/automekin2020:$AMKREL"
 SIF=$HOME/automekin2020_${AMKREL}.sif
 if [ ! -f $SIF ]

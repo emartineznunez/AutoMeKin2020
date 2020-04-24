@@ -8,7 +8,7 @@ echo ""
 if [ -f /tmp/software/Singularity/3.5.2/bin/singularity -a -f /tmp/software/Singularity/3.5.2/bin/jq ]
 then
   export PATH=/tmp/software/Squashfs/4.4:/tmp/software/Singularity/3.5.2/bin:$PATH
-  AMKREL=$(singularity search automekin2020 | grep "Tags:" | awk 'BEGIN{tag=872}{if($2>tag)tag=$2}END{print tag}')
+  AMKREL=$(singularity search automekin2020 | grep "Tags:" | awk 'BEGIN{tag=872}{if($NF>tag)tag=$NF}END{print tag}')
   AMK_INSTANCE=${AMK_INSTANCE:-automekin_$AMKREL}
   export AMK_INSTANCE
   if [ "$1" = "stop" ]
