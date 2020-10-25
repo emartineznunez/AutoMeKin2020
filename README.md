@@ -1,6 +1,4 @@
-# AutoMeKin
-
-**This is an older version of the code (no longer supported). The supported version can be obtained from:**
+# AutoMeKin. This is an older version of the code (no longer supported). The supported version can be obtained from:
 
 https://rxnkin.usc.es/index.php/AutoMeKin
 
