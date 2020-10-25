@@ -1,6 +1,6 @@
 # AutoMeKin. This is an older version of the code (no longer supported). The supported version can be obtained from:
 
-https://rxnkin.usc.es/index.php/AutoMeKin
+## https://rxnkin.usc.es/index.php/AutoMeKin
 
 <p align="center">
    <img src="logo.png" alt="alt text" width="400" height="200">
